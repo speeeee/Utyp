@@ -22,9 +22,14 @@
              (map (λ (x) (display "~a " x)) (typ c)) (displayln ")"))
       (displayln "~a : ~a" (val c) (typ c))))
 
+(define (group c n)
+  (if (empty? c) n
+      (cond [(equal? (caar c) 'full) (push n (list (list (map val (cdar c)) (map typ (cdar c)))))]
+            [else (push c n)])))
+
 (define (main)
   (let ([c (process-line (map lex (string-split-spec (read-line))) '())])
-    (write c))
+    (write (group c '())))
   (main))
 
 (main)
