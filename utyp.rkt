@@ -22,14 +22,18 @@
              (map (λ (x) (display "~a " x)) (typ c)) (displayln ")"))
       (displayln "~a : ~a" (val c) (typ c))))
 
-(define (group c n)
+(define (group c)
+   (cond [(and (list? c) (equal? (car c) 'full)) (list (map val (cdr c)) (map typ (cdr c)))]
+         [else c]))
+(define (infix c l n)
   (if (empty? c) n
-      (cond [(equal? (caar c) 'full) (push n (list (list (map val (cdar c)) (map typ (cdar c)))))]
-            [else (push c n)])))
+      (if (equal? (car c) "->")
+          (infix (cddr c) (car c) (append (list "->") (list l (cadr c))))
+          (infix (cdr c) (car c) (push n (car c))))))
 
 (define (main)
-  (let ([c (process-line (map lex (string-split-spec (read-line))) '())])
-    (write (group c '())))
+  (let ([c (map group (process-line (map lex (string-split-spec (read-line))) '()))])
+    (write (infix c '() '())))
   (main))
 
 (main)
