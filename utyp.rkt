@@ -2,13 +2,19 @@
 (require "parapp.rkt")
 
 (define ret? third) (define typ second) (define val first)
+(define (popp stk) (pop (pop stk)))
 
-(define (push~ stk s)
+(define (push~ stk s) ;(displayln stk) (displayln s)
   (cond [(string=? (typ s) "Symbol") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
                                               (equal? (car (pop stk)) 'prog))
-                                         (push (ret-pop stk) (push (pop stk) s))
+                                         (push (ret-pop stk) (push~ (pop stk) s))
                                          (push stk s))]
-        [(string=? (typ s) "opn") (push stk (list 'prog))]
+        [(and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk))) (list? (popp stk))
+              (equal? (car (popp stk)) 'prog)) (push (ret-pop stk) (push~ (pop stk) s))]
+        [(string=? (typ s) "opn") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
+                                           (equal? (car (pop stk)) 'prog)) 
+                                      (push (ret-pop stk) (push (pop stk) (list 'prog)))
+                                      (push stk (list 'prog)))]
         [(string=? (typ s) "clos") (push (ret-pop stk) (append (list 'full) (cdr (pop stk))))]
         [(string=? (typ s) "app") (push stk (val s))]
         [else (push stk s)]))
@@ -25,15 +31,15 @@
 (define (group c)
    (cond [(and (list? c) (equal? (car c) 'full)) (list (map val (cdr c)) (map typ (cdr c)))]
          [else c]))
-(define (infix c l n)
+(define (infix c n)
   (if (empty? c) n
       (if (equal? (car c) "->")
-          (infix (cddr c) (car c) (append (list "->") (list l (cadr c))))
-          (infix (cdr c) (car c) (push n (car c))))))
+          (infix (cddr c) (push (ret-pop n) (append (list "->") (list (pop n) (cadr c)))))
+          (infix (cdr c) (push n (car c))))))
 
 (define (main)
-  (let ([c (map group (process-line (map lex (string-split-spec (read-line))) '()))])
-    (write (infix c '() '())))
+  (let ([c (process-line (map lex (string-split-spec (read-line))) '())])
+    (write (infix c '())))
   (main))
 
 (main)
