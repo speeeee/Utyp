@@ -4,6 +4,16 @@
 (define ret? third) (define typ second) (define val first)
 (define (popp stk) (pop (pop stk)))
 
+(define out first) (define in second)
+(define funs* (list ; Output Input
+                    (list "Int" "Symbol")
+                    (list (list "Int" "Int") "Symbol")
+                    (list "Int" "Int")))
+
+(define (comp-infix x ls)
+  (if (empty? ls) x 
+      (comp-infix (infix x (pop ls) '()) (ret-pop ls))))
+
 (define (push~ stk s) ;(displayln stk) (displayln s)
   (cond [(string=? (typ s) "Symbol") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
                                               (equal? (car (pop stk)) 'prog))
@@ -15,7 +25,7 @@
                                            (equal? (car (pop stk)) 'prog)) 
                                       (push (ret-pop stk) (push (pop stk) (list 'prog)))
                                       (push stk (list 'prog)))]
-        [(string=? (typ s) "clos") (push (ret-pop stk) (append (list 'full) (cdr (pop stk))))]
+        [(string=? (typ s) "clos") (push (ret-pop stk) (group (append (list 'full) (cdr (pop stk)))))]
         [(string=? (typ s) "app") (push stk (val s))]
         [else (push stk s)]))
 
@@ -31,15 +41,24 @@
 (define (group c)
    (cond [(and (list? c) (equal? (car c) 'full)) (list (map val (cdr c)) (map typ (cdr c)))]
          [else c]))
-(define (infix c n)
+(define (infix c l n)
   (if (empty? c) n
-      (if (equal? (car c) "->")
-          (infix (cddr c) (push (ret-pop n) (append (list "->") (list (pop n) (cadr c)))))
-          (infix (cdr c) (push n (car c))))))
+      (if (equal? (car c) l)
+          (infix (cddr c) l (push (ret-pop n) (append (list l) (list (pop n) (cadr c)))))
+          (infix (cdr c) l (push n (car c))))))
+(define (fun-app stk n)
+  (if (empty? stk) n
+      (if (type? (val (car stk)) funs*)
+          (if (and (list? (car stk)) (not (empty? n)) (list? (pop n))
+                   (fexists? (val (car stk)) (typ (pop n)) funs*))
+              (fun-app (cdr stk) (push (ret-pop n) (list (pop n) (val (car stk)))))
+              (printf "ERROR: conversion `~a -> ~a' does not exist.~n"
+                      (typ (pop n)) (val (car stk))))
+          (fun-app (cdr stk) (push n (car stk))))))
 
 (define (main)
   (let ([c (process-line (map lex (string-split-spec (read-line))) '())])
-    (write (infix c '())))
+    (write (fun-app (comp-infix c (list "=" "->")) '())))
   (main))
 
 (main)
