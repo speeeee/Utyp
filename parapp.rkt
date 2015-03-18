@@ -4,9 +4,10 @@
          push-n lex get-tok find-fun
          cons-fun push-cons fcons? 
          full-cons? exec-cons fexists? 
-         string-split-spec lit)
+         string-split-spec type? lit)
 
 (struct lit (val typ))
+(define val first) (define typ second)
 
 ; stack-based cell-based(?) partial application-based language
 
@@ -52,9 +53,12 @@
     (if (< (- (length stk) 1) (length (second f))) (push '() g)
         (push (car (pop-n stk (+ 1 (length (second f))))) g))))
 (define (fcons? f fs)
-  (and (not (empty? f)) (ormap (lambda (x) (equal? (car f) x)) fs)))
-(define (fexists? s fs)
-  (ormap (lambda (x) (string=? x s)) (map car fs)))
+  (ormap (lambda (x) (equal? (car f) x)) fs))
+(define (fexists? v t fs)
+  (ormap (lambda (x) (and (equal? (car x) v)
+                          (equal? (second x) t))) fs))
+(define (type? v fs)
+  (ormap (λ (x) (equal? x v)) (map car fs)))
 (define (full-cons? f) (= (length (cdr f)) (length (second (car f)))))
 (define (exec-cons stk fs)
   (push-n (push-n (ret-pop (push-cons stk fs)) (cdr (cons-fun stk fs))) (caddar (cons-fun stk fs))))
