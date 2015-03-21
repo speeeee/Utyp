@@ -7,8 +7,8 @@
 (define out first) (define in second)
 (define funs* (list ; Output Input
                     (list "Int" "Symbol")
-                    (list (list "Int" "Int") "Symbol")
-                    (list "Int" "Int")))
+                    (list "String" "Symbol")
+                    (list "Char" "Symbol")))
 
 (define (comp-infix x ls)
   (if (empty? ls) x 
@@ -52,13 +52,18 @@
           (if (and (list? (car stk)) (not (empty? n)) (list? (pop n))
                    (fexists? (val (car stk)) (typ (pop n)) funs*))
               (fun-app (cdr stk) (push (ret-pop n) (list (pop n) (val (car stk)))))
-              (printf "ERROR: conversion `~a -> ~a' does not exist.~n"
-                      (typ (pop n)) (val (car stk))))
+              (begin (printf "ERROR: conversion `~a -> ~a' does not exist.~n"
+                             (typ (pop n)) (val (car stk))) '()))
           (fun-app (cdr stk) (push n (car stk))))))
+(define (mk-funs stk n)
+  (if (empty? stk) n
+      (if (equal? (caar stk) "=") (begin (set! funs* (push funs* (list (val (third (cadar stk))) (val (second (cadar stk))))))
+                                         (mk-funs (cdr stk) n))
+          (mk-funs (cdr stk) (push n (car stk))))))
 
 (define (main)
   (let ([c (process-line (map lex (string-split-spec (read-line))) '())])
-    (write (fun-app (comp-infix c (list "=" "->")) '())))
+    (write (mk-funs (fun-app (comp-infix c (list "=" "->")) '()) '())))
   (main))
 
 (main)
