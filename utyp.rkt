@@ -19,6 +19,7 @@
                                               (equal? (car (pop stk)) 'prog))
                                          (push (ret-pop stk) (push~ (pop stk) s))
                                          (push stk s))]
+        [(string=? (typ s) "lclos") (push (ret-pop stk) (list (list 'List (val (second (pop stk)))) "!!" #f))]
         [(and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk))) (list? (popp stk))
               (equal? (car (popp stk)) 'prog)) (push (ret-pop stk) (push~ (pop stk) s))]
         [(string=? (typ s) "opn") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
