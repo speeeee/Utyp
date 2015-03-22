@@ -28,7 +28,7 @@
              (char-numeric? (string-ref x 0))) (list x "Symbol" #f)]
         [(or (equal? (string-ref x 0) #\()) (list x "opn" #f)]
         [(member x '(":" "->" "=" "`")) (list x "app" #f)]
-        [(equal? (string-ref x 0) #\{) (list x "lopn" #f)]
+        [(equal? (string-ref x 0) #\{) (list x "opn" #f)]
         [(equal? (string-ref x 0) #\)) (list x "clos" #f)]
         [(equal? (string-ref x 0) #\}) (list x "lclos" #f)]
         [else (list x "Symbol" #f)]))
