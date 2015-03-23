@@ -1,6 +1,8 @@
 #lang racket
 (require "parapp.rkt")
 
+;( 1 2 ) { Int }
+
 (define ret? third) (define typ second) (define val first)
 (define (popp stk) (pop (pop stk)))
 
@@ -19,7 +21,7 @@
                                               (equal? (car (pop stk)) 'prog))
                                          (push (ret-pop stk) (push~ (pop stk) s))
                                          (push stk s))]
-        [(string=? (typ s) "lclos") (push (ret-pop stk) (list (list 'List (val (second (pop stk)))) "!!" #f))]
+        [(string=? (typ s) "lclos") (push (ret-pop stk) (list (append (list 'Union) (map val (cdr (pop stk)))) "Union" #f))]
         [(and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk))) (list? (popp stk))
               (equal? (car (popp stk)) 'prog)) (push (ret-pop stk) (push~ (pop stk) s))]
         [(string=? (typ s) "opn") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
