@@ -55,10 +55,19 @@
 (define (fcons? f fs)
   (ormap (lambda (x) (equal? (car f) x)) fs))
 (define (fexists? v t fs)
-  (ormap (lambda (x) (and (equal? (car x) v)
-                          (equal? (second x) t))) fs))
+  (ormap (lambda (x) (and (equal?? (car x) v)
+                          (equal?? (second x) t))) fs))
 (define (type? v fs)
-  (ormap (λ (x) (equal? x v)) (map car fs)))
+  (ormap (λ (x) (equal?? x v)) (map car fs)))
+(define (equal?? a b) 
+  (if (not (and (list? a) (list? b))) (equal? a b)
+  (cond [(not (= (length a) (length b))) #f] [(empty? a) #t]
+        [(and (list? (car b)) (list? (car a)) (equal?? (car a) (car b))) (equal?? (cdr a) (cdr b))]
+        [(or (equal? (string-ref (car b) 0) #\_)
+             (equal? (string-ref (car a) 0) #\_)) (equal?? (cdr a) (cdr b))]
+        [(equal? (car a) (car b)) (equal?? (cdr a) (cdr b))]
+        [else #f])))
+
 (define (full-cons? f) (= (length (cdr f)) (length (second (car f)))))
 (define (exec-cons stk fs)
   (push-n (push-n (ret-pop (push-cons stk fs)) (cdr (cons-fun stk fs))) (caddar (cons-fun stk fs))))
