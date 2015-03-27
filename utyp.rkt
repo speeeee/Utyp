@@ -4,6 +4,7 @@
 ;( 1 2 ) { Int }
 
 (define ret? third) (define typ second) (define val first)
+(define cop (current-output-port))
 (define (popp stk) (pop (pop stk)))
 
 (define out first) (define in second)
@@ -60,13 +61,17 @@
           (fun-app (cdr stk) (push n (car stk))))))
 (define (mk-funs stk n)
   (if (empty? stk) n
-      (if (equal? (caar stk) "=") (begin (set! funs* (push funs* (list (val (third (cadar stk))) (val (second (cadar stk))))))
-                                         (mk-funs (cdr stk) n))
+      (if (or (equal? (caar stk) "=")
+              (equal? (caar stk) "#=")) (begin (when (equal? (caar stk) "=") (fprintf cop "yes"))
+                                               (set! funs* (push funs* (list (val (third (cadar stk))) (val (second (cadar stk))))))
+                                               (mk-funs (cdr stk) n))
           (mk-funs (cdr stk) (push n (car stk))))))
 
+(define (parse x)
+  (mk-funs (fun-app (comp-infix (process-line (map lex (string-split-spec x)) '()) (list "#=" "=" "->")) '()) '()))
 (define (main)
-  (let ([c (process-line (map lex (string-split-spec (read-line))) '())])
-    (write (mk-funs (fun-app (comp-infix c (list "=" "->")) '()) '())))
+  (let ([c (parse (read-line))])
+    (write c))
   (main))
 
 (main)
