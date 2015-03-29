@@ -63,8 +63,8 @@
   (if (not (and (list? a) (list? b))) (equal? a b)
   (cond [(not (= (length a) (length b))) #f] [(empty? a) #t]
         [(and (list? (car b)) (list? (car a)) (equal?? (car a) (car b))) (equal?? (cdr a) (cdr b))]
-        [(or (equal? (string-ref (car b) 0) #\_)
-             (equal? (string-ref (car a) 0) #\_)) (equal?? (cdr a) (cdr b))]
+        [(or (and (string? (car b)) (equal? (string-ref (car b) 0) #\_))
+             (and (string? (car a)) (equal? (string-ref (car a) 0) #\_))) (equal?? (cdr a) (cdr b))]
         [(equal? (car a) (car b)) (equal?? (cdr a) (cdr b))]
         [else #f])))
 

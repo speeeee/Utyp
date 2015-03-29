@@ -43,7 +43,9 @@
       (displayln "~a : ~a" (val c) (typ c))))
 
 (define (group c)
-   (cond [(and (list? c) (equal? (car c) 'full)) (list (map val (cdr c)) (map typ (cdr c)))]
+   (cond [(and (list? c) (equal? (car c) 'full)) (list (map val (cdr c)) (map typ (cdr c)))
+                                                 #;(list (append (list "Group") (list (map val (cdr c))))
+                                                       (append (list "Group") (list (map typ (cdr c)))))]
          [else c]))
 (define (infix c l n)
   (if (empty? c) n
