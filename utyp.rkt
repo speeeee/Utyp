@@ -29,7 +29,9 @@
                                            (equal? (car (pop stk)) 'prog)) 
                                       (push (ret-pop stk) (push (pop stk) (list 'prog)))
                                       (push stk (list 'prog)))]
-        [(string=? (typ s) "clos") (push (ret-pop stk) (group (append (list 'full) (cdr (pop stk)))))]
+        [(string=? (typ s) "clos") (cond [(string=? (val s) "G)") (push (ret-pop stk) (group (append (list 'full (list "Group" "Symbol" #f)) (cdr (pop stk)))))]
+                                         [(string=? (val s) "L)") (push (ret-pop stk) (group (append (list 'full (list "List" "Symbol" #f)) (cdr (pop stk)))))]
+                                         [else (push (ret-pop stk) (group (append (list 'full) (cdr (pop stk)))))])]
         [(string=? (typ s) "app") (push stk (val s))]
         [else (push stk s)]))
 
