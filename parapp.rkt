@@ -29,8 +29,10 @@
         [(or (equal? (string-ref x 0) #\()) (list x "opn" #f)]
         [(member x '(":" "->" "=" "`" "#=")) (list x "app" #f)]
         [(equal? (string-ref x 0) #\{) (list x "opn" #f)]
-        [(equal? (string-ref x 0) #\)) (list x "clos" #f)]
-        [(equal? (string-ref x 0) #\}) (list x "lclos" #f)]
+        [(or (equal? (string-ref x 0) #\))
+             (string=? x "G)") (string=? x "L)")) (list x "clos" #f)]
+        [(or (equal? (string-ref x 0) #\})) (list x "lclos" #f)]
+        ;[(string=? x "G)") (list x "gclos" #f)] [(string=? x "L)") (list x "lsclos" #f)]
         [else (list x "Symbol" #f)]))
 
 (define (*get-tok* f lst) 
