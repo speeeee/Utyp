@@ -71,11 +71,16 @@
                                                (mk-funs (cdr stk) n))
           (mk-funs (cdr stk) (push n (car stk))))))
 
+(define (out-c n)
+  (cond [(not (list? (val n))) (fprintf cop "~a;~n" (val n))]
+        [(equal?? (typ n) (list "Group" "_a")) (fprintf cop "TODO~n")]))
+
 (define (parse x)
   (mk-funs (fun-app (comp-infix (process-line (map lex (string-split-spec x)) '()) (list "#=" "=" "->")) '()) '()))
 (define (main)
   (let ([c (parse (read-line))])
-    (write c))
+    (write c)
+    (when (not (empty? c)) (out-c (car c))))
   (main))
 
 (main)

@@ -4,7 +4,7 @@
          push-n lex get-tok find-fun
          cons-fun push-cons fcons? 
          full-cons? exec-cons fexists? 
-         string-split-spec type? lit)
+         string-split-spec type? lit equal??)
 
 (struct lit (val typ))
 (define val first) (define typ second)
