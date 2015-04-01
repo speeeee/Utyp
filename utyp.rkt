@@ -22,15 +22,15 @@
                                               (equal? (car (pop stk)) 'prog))
                                          (push (ret-pop stk) (push~ (pop stk) s))
                                          (push stk s))]
-        [(string=? (typ s) "lclos") (push (ret-pop stk) (list (append (list 'Union) (map val (cdr (pop stk)))) "Union" #f))]
         [(and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk))) (list? (popp stk))
               (equal? (car (popp stk)) 'prog)) (push (ret-pop stk) (push~ (pop stk) s))]
         [(string=? (typ s) "opn") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
                                            (equal? (car (pop stk)) 'prog)) 
-                                      (push (ret-pop stk) (push (pop stk) (list 'prog)))
-                                      (push stk (list 'prog)))]
-        [(string=? (typ s) "clos") (cond [(string=? (val s) "G)") (push (ret-pop stk) (group (append (list 'full (list "Group" "Symbol" #f)) (cdr (pop stk)))))]
-                                         [(string=? (val s) "L)") (push (ret-pop stk) (group (append (list 'full (list "List" "Symbol" #f)) (cdr (pop stk)))))]
+                                      (push (ret-pop stk) (push (pop stk) 
+                                                                (if (string=? (val s) "('") (list 'prog (list "Group" "Symbol" #f) (list 'prog))
+                                                                    (list 'prog))))
+                                      (push stk (if (string=? (val s) "('") (list 'prog (list "Group" "Symbol" #f) (list 'prog)) (list 'prog))))]
+        [(string=? (typ s) "clos") (cond #;[(string=? (val s) "')") (push (ret-pop stk) (group (append (list 'full) (cdr (pop stk)))))]
                                          [else (push (ret-pop stk) (group (append (list 'full) (cdr (pop stk)))))])]
         [(string=? (typ s) "app") (push stk (val s))]
         [else (push stk s)]))
@@ -71,16 +71,22 @@
                                                (mk-funs (cdr stk) n))
           (mk-funs (cdr stk) (push n (car stk))))))
 
-(define (out-c n)
+#;(define (out-c n)
   (cond [(not (list? (val n))) (fprintf cop "~a;~n" (val n))]
-        [(equal?? (typ n) (list "Group" "_a")) (fprintf cop "TODO~n")]))
+        [(equal?? (typ n) (list "Group" "_a")) (begin (map (λ (x) ()) (ret-pop (val n))))]))
+
+#;(define (trans->c n)
+  (cond [(not (list? (val n))) (format "~a" (val n))]
+        [(equal?? (typ n) (list "Group" "_a")) (let ([o (open-output-string)])
+                                                 (fprintf o ))]))
 
 (define (parse x)
-  (mk-funs (fun-app (comp-infix (process-line (map lex (string-split-spec x)) '()) (list "#=" "=" "->")) '()) '()))
+  (mk-funs (fun-app (comp-infix (process-line 
+                                 (map lex (flatten (map (λ (y) (if (string=? y "')") (list ")" ")") y)) (string-split-spec x)))) '()) (list "#=" "=" "->")) '()) '()))
 (define (main)
   (let ([c (parse (read-line))])
     (write c)
-    (when (not (empty? c)) (out-c (car c))))
+    #;(when (not (empty? c)) (out-c (car c))))
   (main))
 
 (main)

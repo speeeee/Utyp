@@ -26,11 +26,12 @@
         [(or (and (> (string-length x) 1) (equal? (string-ref x 0) #\-)
                   (char-numeric? (string-ref x 0)))
              (char-numeric? (string-ref x 0))) (list x "Symbol" #f)]
-        [(or (equal? (string-ref x 0) #\()) (list x "opn" #f)]
-        [(member x '(":" "->" "=" "`" "#=")) (list x "app" #f)]
+        [(or (equal? (string-ref x 0) #\()
+             (string=? x "('")) (list x "opn" #f)]
+        [(member x '(":" "->" "=" "#=")) (list x "app" #f)]
         [(equal? (string-ref x 0) #\{) (list x "opn" #f)]
         [(or (equal? (string-ref x 0) #\))
-             (string=? x "G)") (string=? x "L)")) (list x "clos" #f)]
+             (string=? x "')")) (list x "clos" #f)]
         [(or (equal? (string-ref x 0) #\})) (list x "lclos" #f)]
         ;[(string=? x "G)") (list x "gclos" #f)] [(string=? x "L)") (list x "lsclos" #f)]
         [else (list x "Symbol" #f)]))
@@ -57,6 +58,7 @@
 (define (fcons? f fs)
   (ormap (lambda (x) (equal? (car f) x)) fs))
 (define (fexists? v t fs)
+  ;TODO: readd ambiguous typing.
   (ormap (lambda (x) (and (equal?? (car x) v)
                           (equal?? (second x) t))) fs))
 (define (type? v fs)
@@ -65,8 +67,6 @@
   (if (not (and (list? a) (list? b))) (equal? a b)
   (cond [(not (= (length a) (length b))) #f] [(empty? a) #t]
         [(and (list? (car b)) (list? (car a)) (equal?? (car a) (car b))) (equal?? (cdr a) (cdr b))]
-        [(or (and (string? (car b)) (equal? (string-ref (car b) 0) #\_))
-             (and (string? (car a)) (equal? (string-ref (car a) 0) #\_))) (equal?? (cdr a) (cdr b))]
         [(equal? (car a) (car b)) (equal?? (cdr a) (cdr b))]
         [else #f])))
 
