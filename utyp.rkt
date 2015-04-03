@@ -8,6 +8,7 @@
 (define (popp stk) (pop (pop stk)))
 
 (define out first) (define in second)
+;TODO: add facts.
 (define funs* (list ; Output Input
                     (list "Int" "Symbol")
                     (list "String" "Symbol")
@@ -54,7 +55,7 @@
       (if (equal? (car c) l)
           (infix (cddr c) l (push (ret-pop n) (append (list l) (list (pop n) (cadr c)))))
           (infix (cdr c) l (push n (car c))))))
-(define (fun-app stk n) 
+(define (fun-app stk n)
   (if (empty? stk) n
       (if (type? (val (car stk)) funs*)
           (if (and (list? (car stk)) (not (empty? n)) (list? (pop n))

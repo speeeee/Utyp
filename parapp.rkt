@@ -57,16 +57,39 @@
         (push (car (pop-n stk (+ 1 (length (second f))))) g))))
 (define (fcons? f fs)
   (ormap (lambda (x) (equal? (car f) x)) fs))
-(define (fexists? v t fs)
+(define (fexists? v t fs) (displayln "Got here")
+  (ormap (lambda (x) (or (and (equal? (car x) v)
+                              (equal? (second x) t))
+                         (check-eq v t x))) fs))
+
+(define (check-eq v t x)
   ;TODO: readd ambiguous typing.
-  (ormap (lambda (x) (and (equal?? (car x) v)
-                          (equal?? (second x) t))) fs))
+  (let ([nxa (r-amb (car x) (f-amb (second x) t))])
+    (and (equal? nxa v) (equal?? (second x) t))))
+
+(define (r-amb f lst) ;f = the return type. lst = possible ambiguous variables.
+  (if (empty? lst) #f
+  (cond [(and (string? f) (char=? (string-ref f 0) #\_)) 
+         (car (filter (λ (x) (string=? (car x) f)) lst))]
+        [(list? f) (map (λ (x) (r-amb x lst)) f)])))
+
+(define (f-amb f i) ;( List _a ) ( List ( Int Int Int ) ) ->
+                    ;( Group _a ) ( Group ( Int Int Int ) )
+                    ;f = the input type. i = user input.
+  (displayln i)
+  (if (and (list? f) (list? i) (not (= (length f) (length i)))) (list (list "no" 'no))
+  (cond [(and (string? f) (char=? (string-ref f 0) #\_)) (list (list f i))]
+        [(and (list? f) (list? i)) (map f-amb f i)]
+        [else '()])))
+
 (define (type? v fs)
   (ormap (λ (x) (equal?? x v)) (map car fs)))
 (define (equal?? a b) 
   (if (not (and (list? a) (list? b))) (equal? a b)
   (cond [(not (= (length a) (length b))) #f] [(empty? a) #t]
         [(and (list? (car b)) (list? (car a)) (equal?? (car a) (car b))) (equal?? (cdr a) (cdr b))]
+        [(or (and (string? (car b)) (equal? (string-ref (car b) 0) #\_))
+             (and (string? (car a)) (equal? (string-ref (car a) 0) #\_))) (equal?? (cdr a) (cdr b))]
         [(equal? (car a) (car b)) (equal?? (cdr a) (cdr b))]
         [else #f])))
 
