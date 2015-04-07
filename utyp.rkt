@@ -72,9 +72,11 @@
                                                (mk-funs (cdr stk) n))
           (mk-funs (cdr stk) (push n (car stk))))))
 
-#;(define (out-c n)
-  (cond [(not (list? (val n))) (fprintf cop "~a;~n" (val n))]
-        [(equal?? (typ n) (list "Group" "_a")) (begin (map (λ (x) ()) (ret-pop (val n))))]))
+(define (out-c n)
+  (cond [(not (list? (val n))) (fprintf cop "~a" (val n))]
+        [(equal?? (typ n) (list "Group" "_a")) (begin (map (λ (x) (fprintf cop "~a, " x)) (ret-pop (val n)))
+                                                      (fprintf cop "~a" (pop (val n))))]
+        [else (begin (fprintf cop "Int(") (out-c (val n)) (fprintf cop ");~n"))]))
 
 #;(define (trans->c n)
   (cond [(not (list? (val n))) (format "~a" (val n))]
@@ -87,7 +89,7 @@
 (define (main)
   (let ([c (parse (read-line))])
     (write c)
-    #;(when (not (empty? c)) (out-c (car c))))
+    (when (not (empty? c)) (out-c (car c))))
   (main))
 
 (main)

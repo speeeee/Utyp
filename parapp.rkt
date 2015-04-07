@@ -57,7 +57,7 @@
         (push (car (pop-n stk (+ 1 (length (second f))))) g))))
 (define (fcons? f fs)
   (ormap (lambda (x) (equal? (car f) x)) fs))
-(define (fexists? v t fs) (displayln "Got here")
+(define (fexists? v t fs)
   (ormap (lambda (x) (or (and (equal? (car x) v)
                               (equal? (second x) t))
                          (check-eq v t x))) fs))
@@ -68,7 +68,7 @@
     (and (equal? nxa v) (equal?? (second x) t))))
 
 (define (r-amb f lst) ;f = the return type. lst = possible ambiguous variables.
-  (if (empty? lst) #f
+  (if (or (empty? f) (empty? lst)) #f
   (cond [(and (string? f) (char=? (string-ref f 0) #\_)) 
          (car (filter (λ (x) (string=? (car x) f)) lst))]
         [(list? f) (map (λ (x) (r-amb x lst)) f)])))
@@ -80,7 +80,7 @@
   (if (and (list? f) (list? i) (not (= (length f) (length i)))) (list (list "no" 'no))
   (cond [(and (string? f) (char=? (string-ref f 0) #\_)) (list (list f i))]
         [(and (list? f) (list? i)) (map f-amb f i)]
-        [else '()])))
+        [else (list (list "no" 'no))])))
 
 (define (type? v fs)
   (ormap (λ (x) (equal?? x v)) (map car fs)))
