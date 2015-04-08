@@ -18,6 +18,8 @@
   (if (empty? ls) x 
       (comp-infix (infix x (pop ls) '()) (ret-pop ls))))
 
+; Group and List are special for being possible to define on the spot.
+; You have to convert to another customized type to get the desired result.
 (define (push~ stk s) ;(displayln stk) (displayln s)
   (cond [(string=? (typ s) "Symbol") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
                                               (equal? (car (pop stk)) 'prog))
@@ -28,9 +30,9 @@
         [(string=? (typ s) "opn") (if (and (not (empty? stk)) (list? (pop stk)) (not (empty? (pop stk)))
                                            (equal? (car (pop stk)) 'prog)) 
                                       (push (ret-pop stk) (push (pop stk) 
-                                                                (if (string=? (val s) "('") (list 'prog (list "Group" "Symbol" #f) (list 'prog))
+                                                                (if (string=? (val s) "('") (list 'prog (list "Group" "Group" #f) (list 'prog))
                                                                     (list 'prog))))
-                                      (push stk (if (string=? (val s) "('") (list 'prog (list "Group" "Symbol" #f) (list 'prog)) (list 'prog))))]
+                                      (push stk (if (string=? (val s) "('") (list 'prog (list "Group" "Group" #f) (list 'prog)) (list 'prog))))]
         [(string=? (typ s) "clos") (cond #;[(string=? (val s) "')") (push (ret-pop stk) (group (append (list 'full) (cdr (pop stk)))))]
                                          [else (push (ret-pop stk) (group (append (list 'full) (cdr (pop stk)))))])]
         [(string=? (typ s) "app") (push stk (val s))]
@@ -73,22 +75,22 @@
           (mk-funs (cdr stk) (push n (car stk))))))
 
 (define (out-c n)
-  (cond [(not (list? (val n))) (fprintf cop "~a" (val n))]
-        [(equal?? (typ n) (list "Group" "_a")) (begin (map (λ (x) (fprintf cop "~a, " x)) (ret-pop (val n)))
-                                                      (fprintf cop "~a" (pop (val n))))]
-        [else (begin (fprintf cop "Int(") (out-c (val n)) (fprintf cop ");~n"))]))
+  (cond [(equal? (car (val n)) "Group") (begin (map (λ (x) (fprintf cop "~a, " x)) (ret-pop (second (val n))))
+                                               (fprintf cop "~a" (pop (second (val n)))))]
+        [(not (list? (val n))) (fprintf cop "~a" (val n))]
+        [else (begin (fprintf cop "~a(" (second n)) (out-c (val n)) (fprintf cop ")"))]))
 
 #;(define (trans->c n)
   (cond [(not (list? (val n))) (format "~a" (val n))]
-        [(equal?? (typ n) (list "Group" "_a")) (let ([o (open-output-string)])
-                                                 (fprintf o ))]))
+        [(equal? (car (val ) (let ([o (open-output-string)])
+                                                 (fprintf o ))))]))
 
 (define (parse x)
   (mk-funs (fun-app (comp-infix (process-line 
                                  (map lex (flatten (map (λ (y) (if (string=? y "')") (list ")" ")") y)) (string-split-spec x)))) '()) (list "#=" "=" "->")) '()) '()))
 (define (main)
   (let ([c (parse (read-line))])
-    (write c)
+    (write c) (fprintf cop "~n")
     (when (not (empty? c)) (out-c (car c))))
   (main))
 

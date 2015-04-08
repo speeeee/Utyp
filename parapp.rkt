@@ -76,7 +76,6 @@
 (define (f-amb f i) ;( List _a ) ( List ( Int Int Int ) ) ->
                     ;( Group _a ) ( Group ( Int Int Int ) )
                     ;f = the input type. i = user input.
-  (displayln i)
   (if (and (list? f) (list? i) (not (= (length f) (length i)))) (list (list "no" 'no))
   (cond [(and (string? f) (char=? (string-ref f 0) #\_)) (list (list f i))]
         [(and (list? f) (list? i)) (map f-amb f i)]
