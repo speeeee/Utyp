@@ -74,11 +74,15 @@
                                                (mk-funs (cdr stk) n))
           (mk-funs (cdr stk) (push n (car stk))))))
 
+(define (mk-id s)
+  (cond [(list? s) (map (λ (x) (mk-id x)) s)]
+        [else (fprintf cop "_~a" s)]))
+
 (define (out-c n)
   (cond [(equal? (car (val n)) "Group") (begin (map (λ (x) (fprintf cop "~a, " x)) (ret-pop (second (val n))))
                                                (fprintf cop "~a" (pop (second (val n)))))]
         [(not (list? (val n))) (fprintf cop "~a" (val n))]
-        [else (begin (fprintf cop "~a(" (second n)) (out-c (val n)) (fprintf cop ")"))]))
+        [else (begin (mk-id (second n)) (fprintf cop "(") (out-c (val n)) (fprintf cop ")"))]))
 
 #;(define (trans->c n)
   (cond [(not (list? (val n))) (format "~a" (val n))]
